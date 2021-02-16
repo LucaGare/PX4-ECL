@@ -649,8 +649,10 @@ void Ekf::updateQuaternion(const float innovation, const float variance, const f
 		if (_control_status.flags.in_air) {
 			return;
 
-		} else {
+		} else if (isTimedOut(_time_last_in_air, (uint64_t)5e6)) {
 			// constrain the innovation to the maximum set by the gate
+			// we need to delay this forced fusion to avoid starting it
+			// immediately after touchdown, when the drone is still armed
 			float gate_limit = sqrtf((sq(gate_sigma) * _heading_innov_var));
 			_heading_innov = math::constrain(innovation, -gate_limit, gate_limit);
 		}
